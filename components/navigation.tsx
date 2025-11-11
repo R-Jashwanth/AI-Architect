@@ -14,19 +14,34 @@ import {
   Users,
   BarChart3,
   User,
+  Mountain,
+  Calculator,
+  Palette,
+  Layout,
+  Sparkles,
+  IndianRupee,
+  Sun,
 } from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: Home },
+  { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "AI Generator", href: "/ai-generator", icon: Wand2 },
   { name: "Design Feed", href: "/design-feed", icon: ImageIcon },
   { name: "AR Placement", href: "/ar-placement", icon: Cube },
   { name: "Smart Shopping", href: "/shopping", icon: ShoppingBag },
   { name: "Floor Plans", href: "/floor-plans", icon: PenTool },
+  { name: "AI Materials", href: "/ai-materials", icon: Sparkles },
+  { name: "AI Budget", href: "/ai-budget", icon: IndianRupee },
+  { name: "AI Colors", href: "/ai-colors", icon: Palette },
+  { name: "AI Layout", href: "/ai-layout", icon: Layout },
+  { name: "Vastu", href: "/vastu", icon: Mountain },
+  { name: "Project Management", href: "/project-management/cost-estimator", icon: Calculator },
   { name: "AI Assistant", href: "/assistant", icon: MessageCircle },
   { name: "Collaborate", href: "/collaborate", icon: Users },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Theme Test", href: "/theme-test", icon: Sun },
 ]
 
 export function Navigation() {
@@ -39,17 +54,17 @@ export function Navigation() {
   return (
     <nav className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border">
       <div className="flex h-full flex-col">
-        <div className="flex h-16 items-center px-6 border-b border-sidebar-border">
+        <div className="flex h-16 items-center px-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
               <Cube className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-sidebar-foreground">AR Interior</span>
+            <span className="font-semibold text-sidebar-foreground text-sm">AR Interior</span>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-4">
-          <div className="space-y-1 px-3">
+        <div className="flex-1 overflow-y-auto py-2">
+          <div className="space-y-1 px-2">
             {navigation.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -72,7 +87,11 @@ export function Navigation() {
           </div>
         </div>
 
-        <div className="border-t border-sidebar-border p-4">
+        <div className="border-t border-sidebar-border p-2 space-y-2">
+          <div className="flex items-center justify-between px-2">
+            <span className="text-xs text-muted-foreground">Theme</span>
+            <ThemeToggle />
+          </div>
           <Button variant="ghost" className="w-full justify-start gap-3">
             <User className="h-4 w-4" />
             <span className="text-sm">Sign in with Google</span>
