@@ -40,69 +40,64 @@ export const MODEL_SOURCES = {
 // Default furniture models (these would be hosted on your server)
 export const DEFAULT_FURNITURE_MODELS: ModelInfo[] = [
   {
-    id: 'table-coffee-gothic',
-    name: 'Gothic Coffee Table',
-    category: 'table',
-    url: '/models/furniture/table-coffee-gothic.glb',
-    dimensions: { width: 120, height: 45, depth: 60 },
-    materials: ['wood'],
-    tags: ['table', 'coffee', 'polyhaven'],
-    license: 'CC0',
-    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
-    sourceUrl: 'https://polyhaven.com/a/gothic_coffee_table',
-    author: 'Poly Haven'
-  },
-  {
-    id: 'table-coffee-industrial',
-    name: 'Industrial Coffee Table',
-    category: 'table',
-    url: '/models/furniture/table-coffee-industrial.glb',
-    dimensions: { width: 120, height: 45, depth: 60 },
-    materials: ['wood', 'metal'],
-    tags: ['table', 'coffee', 'polyhaven'],
-    license: 'CC0',
-    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
-    sourceUrl: 'https://polyhaven.com/a/industrial_coffee_table',
-    author: 'Poly Haven'
-  },
-  {
-    id: 'table-round-wooden',
-    name: 'Round Wooden Table',
-    category: 'table',
-    url: '/models/furniture/table-round-wooden.glb',
-    dimensions: { width: 110, height: 75, depth: 110 },
-    materials: ['wood'],
-    tags: ['table', 'round', 'polyhaven'],
-    license: 'CC0',
-    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
-    sourceUrl: 'https://polyhaven.com/a/round_wooden_table_02',
-    author: 'Poly Haven'
-  },
-  {
-    id: 'chair-lounge-midcentury',
-    name: 'Mid Century Lounge Chair',
-    category: 'chair',
-    url: '/models/furniture/chair-lounge-midcentury.glb',
-    dimensions: { width: 70, height: 85, depth: 70 },
-    materials: ['wood', 'fabric'],
-    tags: ['chair', 'lounge', 'polyhaven'],
-    license: 'CC0',
-    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
-    sourceUrl: 'https://polyhaven.com/a/mid_century_lounge_chair',
-    author: 'Poly Haven'
-  },
-  {
-    id: 'lamp-wall-industrial',
-    name: 'Industrial Wall Lamp',
+    id: 'lantern',
+    name: 'Decorative Lantern',
     category: 'lamp',
-    url: '/models/furniture/lamp-wall-industrial.glb',
-    dimensions: { width: 25, height: 30, depth: 40 },
-    materials: ['metal'],
-    tags: ['lamp', 'wall', 'polyhaven'],
+    url: '/models/lantern.glb',
+    dimensions: { width: 30, height: 60, depth: 30 },
+    materials: ['metal', 'glass'],
+    tags: ['lamp', 'lighting', 'decorative'],
     license: 'CC0',
     licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
-    sourceUrl: 'https://polyhaven.com/a/industrial_wall_lamp',
-    author: 'Poly Haven'
+    author: 'Sample Model'
+  },
+  {
+    id: 'box',
+    name: 'Modern Storage Box',
+    category: 'storage',
+    url: '/models/box.glb',
+    dimensions: { width: 40, height: 40, depth: 40 },
+    materials: ['wood', 'cardboard'],
+    tags: ['storage', 'box', 'container'],
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    author: 'Sample Model'
+  },
+  {
+    id: 'avocado',
+    name: 'Decorative Avocado',
+    category: 'decor',
+    url: '/models/avocado.glb',
+    dimensions: { width: 15, height: 20, depth: 15 },
+    materials: ['plastic'],
+    tags: ['decor', 'fruit', 'modern'],
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    author: 'Sample Model'
+  },
+  {
+    id: 'duck',
+    name: 'Rubber Duck Decor',
+    category: 'decor',
+    url: '/models/duck.glb',
+    dimensions: { width: 20, height: 25, depth: 20 },
+    materials: ['rubber'],
+    tags: ['decor', 'toy', 'bathroom'],
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    author: 'Sample Model'
+  },
+  {
+    id: 'game',
+    name: 'Game Controller',
+    category: 'entertainment',
+    url: '/models/game.glb',
+    dimensions: { width: 15, height: 5, depth: 6 },
+    materials: ['plastic'],
+    tags: ['entertainment', 'game', 'controller'],
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    author: 'Sample Model'
   }
 ]
 

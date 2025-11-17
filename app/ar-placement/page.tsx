@@ -64,6 +64,7 @@ function getCategoryIcon(category: string): string {
     'Decor': '🎨',
     'Seating': '🪑',
     'Tables': '🪑',
+    'Entertainment': '🎮',
   }
   return icons[category] || '🛋️'
 }
@@ -112,13 +113,13 @@ const furnitureItems: FurnitureItem[] = [
   },
   {
     id: 5,
-    name: "Modern Chair (Sample)",
-    category: "Seating",
-    price: "$299",
+    name: "Game Controller",
+    category: "Entertainment",
+    price: "$39",
     image: "/placeholder.svg",
-    dimensions: { width: 60, height: 85, depth: 65 },
-    colors: ["#8B4513", "#2F4F4F"],
-    modelUrl: "/models/furniture/modern/sample (39).glb"
+    dimensions: { width: 15, height: 5, depth: 6 },
+    colors: ["#1E90FF", "#FFFFFF"],
+    modelUrl: "/models/game.glb"
   },
 ]
 

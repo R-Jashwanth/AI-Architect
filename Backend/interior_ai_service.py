@@ -21,9 +21,8 @@ class InteriorAIService:
         self.api_token = os.environ.get("HUGGING_FACE_API_TOKEN")
         self.base_url = "https://router.huggingface.co/hf-inference/models"
         
-        # Primary models for interior design generation (FLUX.1-dev prioritized for accuracy)
+        # Primary models for interior design generation (specialized for better interior designs)
         self.primary_models = [
-            "black-forest-labs/FLUX.1-dev",  # Primary: High-quality, accurate image generation
             "Viktor1717/scandinavian-interior-style1",  # Specialized scandinavian interior model
             "SedatAl/Interior-Flux-Lora"  # Specialized interior design model
         ]

@@ -27,41 +27,41 @@ export default function ARDemoPage() {
 
   // Furniture catalog - using actual 3D models from public folder
   const furnitureModels = [
-    { 
-      url: '/models/lantern.glb', 
-      name: 'Decorative Lantern', 
+    {
+      url: '/models/lantern.glb',
+      name: 'Decorative Lantern',
       description: 'Elegant hanging lantern',
       category: 'Lighting',
-      icon: '🏮',
+      icon: '💡',
       scale: 1.0
     },
-    { 
-      url: '/models/box.glb', 
-      name: 'Storage Box', 
+    {
+      url: '/models/box.glb',
+      name: 'Storage Box',
       description: 'Minimalist storage cube',
       category: 'Storage',
       icon: '📦',
       scale: 1.5
     },
-    { 
-      url: '/models/avocado.glb', 
-      name: 'Decorative Avocado', 
+    {
+      url: '/models/avocado.glb',
+      name: 'Decorative Avocado',
       description: 'Modern accent piece',
       category: 'Decor',
       icon: '🥑',
       scale: 2.0
     },
-    { 
-      url: '/models/game.glb', 
-      name: 'Gaming Item', 
+    {
+      url: '/models/game.glb',
+      name: 'Game Controller',
       description: 'Entertainment piece',
       category: 'Entertainment',
       icon: '🎮',
       scale: 1.0
     },
-    { 
-      url: '/models/duck.glb', 
-      name: 'Rubber Duck', 
+    {
+      url: '/models/duck.glb',
+      name: 'Rubber Duck',
       description: 'Fun decorative item',
       category: 'Decor',
       icon: '🦆',
