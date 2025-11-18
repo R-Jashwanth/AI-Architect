@@ -8,10 +8,15 @@ export interface ModelInfo {
   name: string
   category: string
   url: string
+  iosSrc?: string
   thumbnailUrl?: string
   dimensions: { width: number; height: number; depth: number }
   materials?: string[]
   tags?: string[]
+  license?: string
+  licenseUrl?: string
+  sourceUrl?: string
+  author?: string
 }
 
 // Free 3D model sources and repositories
@@ -35,84 +40,64 @@ export const MODEL_SOURCES = {
 // Default furniture models (these would be hosted on your server)
 export const DEFAULT_FURNITURE_MODELS: ModelInfo[] = [
   {
-    id: 'modern-sofa-1',
-    name: 'Modern 3-Seat Sofa',
-    category: 'sofa',
-    url: '/models/furniture/modern-sofa.glb',
-    thumbnailUrl: '/images/furniture/modern-sofa-thumb.jpg',
-    dimensions: { width: 200, height: 80, depth: 90 },
-    materials: ['fabric', 'wood'],
-    tags: ['modern', 'living-room', 'seating']
-  },
-  {
-    id: 'dining-chair-1',
-    name: 'Wooden Dining Chair',
-    category: 'chair',
-    url: '/models/furniture/dining-chair.glb',
-    thumbnailUrl: '/images/furniture/dining-chair-thumb.jpg',
-    dimensions: { width: 45, height: 85, depth: 50 },
-    materials: ['wood'],
-    tags: ['dining', 'chair', 'wooden']
-  },
-  {
-    id: 'coffee-table-1',
-    name: 'Glass Coffee Table',
-    category: 'table',
-    url: '/models/furniture/coffee-table.glb',
-    thumbnailUrl: '/images/furniture/coffee-table-thumb.jpg',
-    dimensions: { width: 120, height: 40, depth: 60 },
-    materials: ['glass', 'metal'],
-    tags: ['modern', 'living-room', 'table']
-  },
-  {
-    id: 'bookshelf-1',
-    name: '5-Tier Bookshelf',
-    category: 'bookshelf',
-    url: '/models/furniture/bookshelf.glb',
-    thumbnailUrl: '/images/furniture/bookshelf-thumb.jpg',
-    dimensions: { width: 80, height: 180, depth: 30 },
-    materials: ['wood'],
-    tags: ['storage', 'books', 'wooden']
-  },
-  {
-    id: 'bed-1',
-    name: 'Queen Size Bed',
-    category: 'bed',
-    url: '/models/furniture/queen-bed.glb',
-    thumbnailUrl: '/images/furniture/queen-bed-thumb.jpg',
-    dimensions: { width: 160, height: 100, depth: 200 },
-    materials: ['fabric', 'wood'],
-    tags: ['bedroom', 'sleep', 'queen']
-  },
-  {
-    id: 'desk-1',
-    name: 'Office Desk',
-    category: 'desk',
-    url: '/models/furniture/office-desk.glb',
-    thumbnailUrl: '/images/furniture/office-desk-thumb.jpg',
-    dimensions: { width: 140, height: 75, depth: 70 },
-    materials: ['wood', 'metal'],
-    tags: ['office', 'work', 'desk']
-  },
-  {
-    id: 'wardrobe-1',
-    name: '3-Door Wardrobe',
-    category: 'wardrobe',
-    url: '/models/furniture/wardrobe.glb',
-    thumbnailUrl: '/images/furniture/wardrobe-thumb.jpg',
-    dimensions: { width: 150, height: 200, depth: 60 },
-    materials: ['wood'],
-    tags: ['bedroom', 'storage', 'clothes']
-  },
-  {
-    id: 'lamp-1',
-    name: 'Floor Lamp',
+    id: 'lantern',
+    name: 'Decorative Lantern',
     category: 'lamp',
-    url: '/models/furniture/floor-lamp.glb',
-    thumbnailUrl: '/images/furniture/floor-lamp-thumb.jpg',
-    dimensions: { width: 30, height: 150, depth: 30 },
-    materials: ['metal', 'fabric'],
-    tags: ['lighting', 'modern', 'floor']
+    url: '/models/lantern.glb',
+    dimensions: { width: 30, height: 60, depth: 30 },
+    materials: ['metal', 'glass'],
+    tags: ['lamp', 'lighting', 'decorative'],
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    author: 'Sample Model'
+  },
+  {
+    id: 'box',
+    name: 'Modern Storage Box',
+    category: 'storage',
+    url: '/models/box.glb',
+    dimensions: { width: 40, height: 40, depth: 40 },
+    materials: ['wood', 'cardboard'],
+    tags: ['storage', 'box', 'container'],
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    author: 'Sample Model'
+  },
+  {
+    id: 'avocado',
+    name: 'Decorative Avocado',
+    category: 'decor',
+    url: '/models/avocado.glb',
+    dimensions: { width: 15, height: 20, depth: 15 },
+    materials: ['plastic'],
+    tags: ['decor', 'fruit', 'modern'],
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    author: 'Sample Model'
+  },
+  {
+    id: 'duck',
+    name: 'Rubber Duck Decor',
+    category: 'decor',
+    url: '/models/duck.glb',
+    dimensions: { width: 20, height: 25, depth: 20 },
+    materials: ['rubber'],
+    tags: ['decor', 'toy', 'bathroom'],
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    author: 'Sample Model'
+  },
+  {
+    id: 'game',
+    name: 'Game Controller',
+    category: 'entertainment',
+    url: '/models/game.glb',
+    dimensions: { width: 15, height: 5, depth: 6 },
+    materials: ['plastic'],
+    tags: ['entertainment', 'game', 'controller'],
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    author: 'Sample Model'
   }
 ]
 
@@ -384,6 +369,23 @@ class ModelService {
    */
   getAllModels(): ModelInfo[] {
     return [...DEFAULT_FURNITURE_MODELS]
+  }
+
+  /**
+   * Find model metadata by URL
+   */
+  getModelByUrl(url: string): ModelInfo | null {
+    const match = DEFAULT_FURNITURE_MODELS.find(m => m.url === url)
+    return match || null
+  }
+
+  verifyLicense(model: ModelInfo, allowed: string[] = ['CC0', 'CC-BY', 'CC-BY-SA']): boolean {
+    if (!model.license) return false
+    return allowed.includes(model.license)
+  }
+
+  getLicensedModels(allowed: string[] = ['CC0', 'CC-BY', 'CC-BY-SA']): ModelInfo[] {
+    return DEFAULT_FURNITURE_MODELS.filter(m => this.verifyLicense(m, allowed))
   }
 
   /**

@@ -54,6 +54,7 @@ export default function DesignFeed() {
   const [paletteMode, setPaletteMode] = useState<string>("");
   const [chipPreviewOpen, setChipPreviewOpen] = useState(false);
   const [chipToPreview, setChipToPreview] = useState<string>("");
+  const [isMobile, setIsMobile] = useState(false);
   const [seenImageIds, setSeenImageIds] = useState<Set<string>>(() => {
     // Load seen image IDs from localStorage
     try {
@@ -165,9 +166,11 @@ export default function DesignFeed() {
       if (selectedColors.length > 0) params.append('colors', selectedColors.join(','));
       if (selectedMaterials.length > 0) params.append('materials', selectedMaterials.join(','));
 
-      const endpoint = "feed"; // Only use feed endpoint
+      // Use mobile endpoint for mobile devices, regular feed for desktop
+      const endpoint = isMobile ? "feed/mobile" : "feed";
       // Set per_page to 30 for better infinite scroll
-      params.set('per_page', '30');
+      // Set per_page based on device type - fewer for mobile to improve initial load
+      params.set('per_page', isMobile ? '15' : '30');
       console.log('Fetching with params:', Object.fromEntries(params.entries())); // Debug log
       console.log('Making request to:', `${API_BASE_URL}/${endpoint}?${params.toString()}`);
       const res = await fetchWithRetry(`${API_BASE_URL}/${endpoint}?${params.toString()}`);
@@ -203,8 +206,16 @@ export default function DesignFeed() {
       }
 
       if (results.length === 0) {
-        console.log('No data returned from API');
-        setHasMore(false);
+        console.log('No data returned from API for page', pageNumber);
+        // If this is page 1 and we got no results, try to fetch from page 1 again
+        // This handles cases where the backend might be starting from a different page
+        if (pageNumber === 1) {
+          console.log('Page 1 returned no results, this might be a backend issue');
+          setHasMore(false);
+        } else {
+          // For other pages, just mark as no more data
+          setHasMore(false);
+        }
       } else {
         // Deduplicate images more effectively
         const filtered = results.filter((item: DesignPost) => {
@@ -327,8 +338,32 @@ export default function DesignFeed() {
     }, 150); // Reduced debounce time for faster response
   };
 
-  // Fetch on style/filters change
+  // Initial mount effect - ensure fresh start
   useEffect(() => {
+    console.log('Design feed mounted, starting fresh load');
+    // Clear everything on initial mount
+    cache.current.clear();
+    cachePage.current.clear();
+    setPage(1);
+    setHasMore(true);
+    setDesignPosts([]);
+    setError(null);
+    setInitialLoading(true);
+    // Start with a fresh fetch
+    fetchDesigns(1, searchQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - only run on mount
+
+  // Fetch on style/filters change (skip on initial mount)
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    // Skip the first render (initial mount is handled above)
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
+    console.log('Filters changed, fetching new data');
     setPage(1);
     setHasMore(true);
     setDesignPosts([]); // Clear existing posts
@@ -345,7 +380,8 @@ export default function DesignFeed() {
     cachePage.current.clear();
     // Always ensure design-related content is fetched
     fetchDesigns(1, searchQuery);
-  }, [selectedStyle, searchQuery, roomType, layoutType, paletteMode, lighting, selectedColors, selectedMaterials, fetchDesigns]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStyle, searchQuery, roomType, layoutType, paletteMode, lighting, selectedColors, selectedMaterials]);
 
   // Fetch on page change
   useEffect(() => {
@@ -379,6 +415,17 @@ export default function DesignFeed() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Cleanup debounce timeout
   useEffect(() => {
     return () => {
@@ -391,11 +438,11 @@ export default function DesignFeed() {
   // Real-time updates: periodically check for new content (less frequent for unlimited scrolling)
   useEffect(() => {
     const id = setInterval(async () => {
-      if (!loading && designPosts.length < 50) { // Only add new content if we don't have too many posts
+      if (!loading && designPosts.length < (isMobile ? 30 : 50)) { // Fewer posts for mobile to save memory
         try {
           // Fetch a small amount of new content
           const newContent = await fetchWithRetry(
-            `${API_BASE_URL}/feed?page=1&per_page=5&query=${encodeURIComponent(searchQuery)}&style=${selectedStyle}${roomType ? `&room_type=${roomType}` : ''}`,
+            `${API_BASE_URL}/${isMobile ? 'feed/mobile' : 'feed'}?page=1&per_page=5&query=${encodeURIComponent(searchQuery)}&style=${selectedStyle}${roomType ? `&room_type=${roomType}` : ''}`,
             { headers: { "Content-Type": "application/json" } }
           );
           
@@ -441,7 +488,7 @@ export default function DesignFeed() {
           console.error("Error fetching new content for real-time updates:", e);
         }
       }
-    }, 30000); // Check every 30 seconds (less frequent)
+    }, isMobile ? 45000 : 30000); // Check less frequently on mobile to save battery
     
     return () => clearInterval(id);
   }, [loading, searchQuery, selectedStyle, roomType, designPosts.length, seenImageIds, fetchWithRetry]);

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { API_BASE_URL } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -125,7 +126,7 @@ const AIColorsPage = () => {
 
   const fetchRoomTypes = async () => {
     try {
-      const response = await fetch('http://localhost:8001/ai/room-types');
+      const response = await fetch(`${API_BASE_URL}/ai/room-types`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -149,7 +150,7 @@ const AIColorsPage = () => {
 
   const fetchDesignStyles = async () => {
     try {
-      const response = await fetch('http://localhost:8001/ai/design-styles');
+      const response = await fetch(`${API_BASE_URL}/ai/design-styles`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -192,7 +193,7 @@ const AIColorsPage = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:8001/ai/colors', {
+      const response = await fetch(`${API_BASE_URL}/ai/colors`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
