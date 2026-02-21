@@ -1,0 +1,73 @@
+C:\Users\amraa\AppData\Roaming\Python\Python313\site-packages\pytest_asyncio\plugin.py:211: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-8.3.3, pluggy-1.6.0 -- C:\Program Files\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: E:\Archi\Backend
+plugins: anyio-3.7.1, dash-3.2.0, locust-2.41.5, asyncio-1.1.0
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 2 items
+
+tests/test_api.py::test_health_check FAILED                              [ 50%]
+tests/test_api.py::test_feed_endpoint FAILED                             [100%]
+
+================================== FAILURES ===================================
+______________________________ test_health_check ______________________________
+
+    @pytest.mark.asyncio
+    async def test_health_check():
+>       async with AsyncClient(app=app, base_url="http://test") as ac:
+E       TypeError: AsyncClient.__init__() got an unexpected keyword argument 'app'
+
+tests\test_api.py:15: TypeError
+_____________________________ test_feed_endpoint ______________________________
+
+    @pytest.mark.asyncio
+    async def test_feed_endpoint():
+        # We expect this to fail or return empty list because services are mocked/not fully functional in test env
+        # But we want to ensure it doesn't crash (500 error)
+>       async with AsyncClient(app=app, base_url="http://test") as ac:
+E       TypeError: AsyncClient.__init__() got an unexpected keyword argument 'app'
+
+tests\test_api.py:24: TypeError
+============================== warnings summary ===============================
+<frozen importlib._bootstrap>:488
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+<frozen importlib._bootstrap>:488
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.ScalarMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+app\routers\ar_router.py:17
+  E:\Archi\Backend\app\routers\ar_router.py:17: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @router.on_event("startup")
+
+main.py:67
+  E:\Archi\Backend\main.py:67: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event("startup")
+
+C:\Users\amraa\AppData\Roaming\Python\Python313\site-packages\fastapi\applications.py:4575
+  C:\Users\amraa\AppData\Roaming\Python\Python313\site-packages\fastapi\applications.py:4575: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_api.py::test_health_check - TypeError: AsyncClient.__init__...
+FAILED tests/test_api.py::test_feed_endpoint - TypeError: AsyncClient.__init_...
+======================== 2 failed, 5 warnings in 9.46s ========================

@@ -1,0 +1,29 @@
+C:\Users\amraa\AppData\Roaming\Python\Python313\site-packages\pytest_asyncio\plugin.py:211: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-8.3.3, pluggy-1.6.0 -- C:\Program Files\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: E:\Archi\Backend
+plugins: anyio-3.7.1, dash-3.2.0, locust-2.41.5, asyncio-1.1.0
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 0 items / 1 error
+
+=================================== ERRORS ====================================
+_____________________ ERROR collecting tests/test_api.py ______________________
+tests\test_api.py:3: in <module>
+    from main import app
+main.py:12: in <module>
+    from app.routers import (
+app\routers\design_router.py:11: in <module>
+    from layout_image_service import layout_image_service, LayoutImageRequest
+layout_image_service.py:292: in <module>
+    layout_image_service = LayoutImageService()
+layout_image_service.py:51: in __init__
+    raise ValueError("HUGGING_FACE_API_TOKEN environment variable is required")
+E   ValueError: HUGGING_FACE_API_TOKEN environment variable is required
+=========================== short test summary info ===========================
+ERROR tests/test_api.py - ValueError: HUGGING_FACE_API_TOKEN environment vari...
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+============================== 1 error in 1.55s ===============================
