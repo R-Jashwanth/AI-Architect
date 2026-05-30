@@ -43,7 +43,7 @@
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/raazi29/AI-Architect.git
+    git clone https://github.com/R-Jashwanth/AI-Architect.git
     cd AI-Architect
     ```
 
