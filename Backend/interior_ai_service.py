@@ -21,20 +21,19 @@ class InteriorAIService:
         self.api_token = os.environ.get("HUGGING_FACE_API_TOKEN")
         self.base_url = "https://router.huggingface.co/hf-inference/models"
         
-        # Primary models for interior design generation (specialized for better interior designs)
+        # Primary models for interior design generation (currently supported by hf-inference)
         self.primary_models = [
-            "Viktor1717/scandinavian-interior-style1",  # Specialized scandinavian interior model
-            "SedatAl/Interior-Flux-Lora"  # Specialized interior design model
+            "black-forest-labs/FLUX.1-dev",             # Best quality - currently supported
+            "black-forest-labs/FLUX.1-schnell",         # Fast version of FLUX
         ]
         
-        # Secondary model (previous primary)
-        self.secondary_model = "stabilityai/stable-diffusion-3.5-large"
+        # Secondary model
+        self.secondary_model = "stabilityai/stable-diffusion-2-1"
         
         # Fallback models for reliability
         self.fallback_models = [
-            "stabilityai/stable-diffusion-xl-base-1.0",
-            "runwayml/stable-diffusion-v1-5",
-            "CompVis/stable-diffusion-v1-4"
+            "stabilityai/stable-diffusion-2",
+            "CompVis/stable-diffusion-v1-4",
         ]
         
         # Architecture and interior design context prompts
@@ -486,7 +485,7 @@ class InteriorAIService:
         enhanced_prompt = f"seamless texture, {prompt}, high resolution, 4k, detailed, photorealistic"
 
         # Use a model good for textures
-        model = "stabilityai/stable-diffusion-xl-base-1.0"
+        model = "black-forest-labs/FLUX.1-schnell"
 
         result = self._make_request(model, enhanced_prompt, **kwargs)
 

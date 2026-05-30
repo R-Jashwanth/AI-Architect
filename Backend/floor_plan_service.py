@@ -16,15 +16,11 @@ if API_TOKEN:
     logger.info(f"Token starts with: {API_TOKEN[:10]}...")
 
 MODELS = {
-    "default": "naver/sdxl-floorplan",
-    "maria26": "maria26/Floor_Plan_LoRA",
-    "envy": "e-n-v-y/envy-floorplans-xl-01",
-    "lora4iabd": "Lora-4-IABD-2/floor_plans_a_v1.safetensors",
-    # Alternative working models
-    "stability": "stabilityai/stable-diffusion-xl-base-1.0",
-    "sdxl": "stabilityai/stable-diffusion-xl-base-1.0",
-    "floorplan-sdxl": "johndpope/Floorplan-SDXL-v1",
-    "floorplan-lora": "h94/IP-Adapter-FaceID/ip-adapter-faceid_sdxl_lora"
+    "default": "black-forest-labs/FLUX.1-schnell",   # Fast, currently supported
+    "flux_dev": "black-forest-labs/FLUX.1-dev",       # High quality
+    "sd2": "stabilityai/stable-diffusion-2-1",        # Still supported
+    "sd2_base": "stabilityai/stable-diffusion-2",     # Fallback
+    "sd1": "CompVis/stable-diffusion-v1-4",           # Classic fallback
 }
 
 def generate_floor_plan(prompt: str, model_name: str = "default"):
@@ -48,12 +44,11 @@ def generate_floor_plan(prompt: str, model_name: str = "default"):
 
     # List of models to try in order
     models_to_try = [
-        MODELS.get("stability", "stabilityai/stable-diffusion-xl-base-1.0"),  # Most reliable
-        MODELS.get("default", "naver/sdxl-floorplan"),
-        MODELS.get("floorplan-sdxl", "johndpope/Floorplan-SDXL-v1"),
-        MODELS.get("maria26", "maria26/Floor_Plan_LoRA"),
-        "runwayml/stable-diffusion-v1-5",  # Fallback
-        "CompVis/stable-diffusion-v1-4",   # Last resort
+        MODELS.get("default", "black-forest-labs/FLUX.1-schnell"),  # Most reliable
+        MODELS.get("flux_dev", "black-forest-labs/FLUX.1-dev"),
+        MODELS.get("sd2", "stabilityai/stable-diffusion-2-1"),
+        MODELS.get("sd2_base", "stabilityai/stable-diffusion-2"),
+        MODELS.get("sd1", "CompVis/stable-diffusion-v1-4"),
     ]
 
     last_error = None
@@ -65,9 +60,9 @@ def generate_floor_plan(prompt: str, model_name: str = "default"):
 
             # Enhanced architectural floor plan prompts
             test_payload = payload.copy()
-            if "floorplan" in attempt_model.lower() or "maria26" in attempt_model:
-                test_payload["inputs"] = f"Professional architectural floor plan: {prompt}, technical drawing, architectural standards, accurate dimensions, proper scale, clear room labels, door and window symbols, furniture layout, traffic flow, building code compliance"
-            elif "stable-diffusion" in attempt_model:
+            if "FLUX" in attempt_model or "flux" in attempt_model.lower():
+                test_payload["inputs"] = f"Professional architectural floor plan: {prompt}, technical drawing, top-down view, architectural standards, accurate dimensions, proper scale, clear room labels, door and window symbols, furniture layout, black and white CAD style"
+            else:
                 test_payload["inputs"] = f"Professional architectural floor plan diagram: {prompt}, clean architectural lines, black and white technical drawing, accurate room proportions, proper door and window placement, furniture symbols, dimension lines, architectural annotations, professional CAD style, building standards compliance"
             
             # Add enhanced parameters for better quality

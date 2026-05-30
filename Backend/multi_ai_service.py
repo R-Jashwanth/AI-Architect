@@ -28,11 +28,11 @@ class MultiAIService:
                 "enabled": bool(self.hf_token),
                 "base_url": "https://router.huggingface.co/hf-inference/models",
                 "models": [
-                    "Viktor1717/scandinavian-interior-style1",  # Specialized scandinavian interior model
-                    "SedatAl/Interior-Flux-Lora",               # Specialized interior design model
-                    "stabilityai/stable-diffusion-3.5-large",   # Secondary
-                    "stabilityai/stable-diffusion-xl-base-1.0", # Fallbacks
-                    "runwayml/stable-diffusion-v1-5"
+                    "black-forest-labs/FLUX.1-dev",             # Best quality - currently supported
+                    "black-forest-labs/FLUX.1-schnell",         # Fast version of FLUX
+                    "stabilityai/stable-diffusion-2-1",         # SD 2.1 - still supported
+                    "stabilityai/stable-diffusion-2",           # SD 2.0 fallback
+                    "CompVis/stable-diffusion-v1-4",            # Classic fallback
                 ]
             },
             "replicate": {

@@ -225,19 +225,17 @@ export const ARManagerEnhanced: React.FC<ARManagerProps> = ({
       <div className="ar-content">
         {!state.isSessionActive ? (
           state.arMode === 'fallback' ? (
-            <div className="flex items-center justify-center h-96 bg-gray-100 rounded-lg">
-              <div className="text-center">
-                <ModelViewerWrapper
-                  src={modelUrl}
-                  alt="3D Model"
-                  ar={false}
-                  cameraControls={true}
-                  autoRotate={true}
-                  onLoad={() => console.log('Model loaded')}
-                  onError={handleError}
-                  iosSrc={modelService.getModelByUrl(modelUrl || '')?.iosSrc}
-                />
-              </div>
+            <div className="w-full" style={{ minHeight: '500px' }}>
+              <ModelViewerWrapper
+                src={modelUrl}
+                alt="3D Model"
+                ar={false}
+                cameraControls={true}
+                autoRotate={true}
+                onLoad={() => console.log('Model loaded')}
+                onError={handleError}
+                iosSrc={modelService.getModelByUrl(modelUrl || '')?.iosSrc}
+              />
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center min-h-[400px] bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-8">
@@ -322,19 +320,17 @@ export const ARManagerEnhanced: React.FC<ARManagerProps> = ({
                 />
               )}
               {state.arMode === 'fallback' && (
-                <div className="flex items-center justify-center h-96 bg-gray-100 rounded-lg">
-                  <div className="text-center">
-                    <ModelViewerWrapper
-                      src={modelUrl}
-                      alt="3D Model"
-                      ar={false}
-                      cameraControls={true}
-                      autoRotate={true}
-                      onLoad={() => console.log('Model loaded')}
-                      onError={handleError}
-                      iosSrc={modelService.getModelByUrl(modelUrl || '')?.iosSrc}
-                    />
-                  </div>
+                <div className="w-full" style={{ minHeight: '500px' }}>
+                  <ModelViewerWrapper
+                    src={modelUrl}
+                    alt="3D Model"
+                    ar={false}
+                    cameraControls={true}
+                    autoRotate={true}
+                    onLoad={() => console.log('Model loaded')}
+                    onError={handleError}
+                    iosSrc={modelService.getModelByUrl(modelUrl || '')?.iosSrc}
+                  />
                 </div>
               )}
             </div>
