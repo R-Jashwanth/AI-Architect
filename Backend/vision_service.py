@@ -20,7 +20,9 @@ class VisionService:
         """Initialize the VisionService with Groq client"""
         self.groq_api_key = os.getenv("GROQ_API_KEY")
         if not self.groq_api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables")
+            logger.warning("GROQ_API_KEY not found - vision service will be disabled")
+            self.client = None
+            return
         
         self.client = Groq(api_key=self.groq_api_key)
         
