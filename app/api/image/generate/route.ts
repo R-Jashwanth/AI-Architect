@@ -12,7 +12,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Make request to our FastAPI backend
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+    let backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+    // Ensure URL has protocol prefix
+    if (backendUrl && !backendUrl.startsWith('http://') && !backendUrl.startsWith('https://')) {
+      backendUrl = `https://${backendUrl}`;
+    }
 
     const response = await fetch(`${backendUrl}/generate-interior`, {
       method: 'POST',
