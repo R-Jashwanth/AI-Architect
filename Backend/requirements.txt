@@ -6,6 +6,7 @@ python-dotenv>=1.0
 
 # AI and API clients
 groq>=0.4.1
+google-generativeai>=0.3.0
 requests>=2.31.0
 aiohttp>=3.9.0
 
