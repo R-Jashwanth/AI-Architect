@@ -5,6 +5,7 @@ import time
 import json
 import re
 from typing import Optional, Dict, Any, List, Tuple
+from huggingface_hub import InferenceClient
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -26,13 +27,12 @@ class MultiAIService:
         self.providers = {
             "huggingface": {
                 "enabled": bool(self.hf_token),
-                "base_url": "https://router.huggingface.co/hf-inference/models",
+                # Use Hugging Face Inference Providers instead of the
+                # deprecated/unsupported direct hf-inference endpoint.
+                "provider": "auto",
                 "models": [
-                    "black-forest-labs/FLUX.1-dev",             # Best quality - currently supported
-                    "black-forest-labs/FLUX.1-schnell",         # Fast version of FLUX
-                    "stabilityai/stable-diffusion-2-1",         # SD 2.1 - still supported
-                    "stabilityai/stable-diffusion-2",           # SD 2.0 fallback
-                    "CompVis/stable-diffusion-v1-4",            # Classic fallback
+                    "black-forest-labs/FLUX.1-dev",
+                    "black-forest-labs/FLUX.1-schnell",
                 ]
             },
             "replicate": {
@@ -377,106 +377,107 @@ class MultiAIService:
         else:
             return base_negative
     
-    def _try_huggingface(self, prompt: str, negative_prompt: str, **kwargs) -> Optional[bytes]:
+    def _try_huggingface(
+        self,
+        prompt: str,
+        negative_prompt: str,
+        **kwargs
+    ) -> Optional[bytes]:
         """
-        Try Hugging Face API
+        Generate an interior image using Hugging Face Inference Providers.
+
+        Uses InferenceClient(provider="auto") rather than directly calling
+        the deprecated hf-inference endpoint.
         """
+
         if not self.providers["huggingface"]["enabled"]:
+            logger.warning("Hugging Face provider is not configured")
             return None
-            
-        headers = {
-            "Authorization": f"Bearer {self.hf_token}",
-            "Content-Type": "application/json"
-        }
-        
-        for model in self.providers["huggingface"]["models"]:
-            try:
-                url = f"{self.providers['huggingface']['base_url']}/{model}"
-                
-                # Enhanced quality parameters for professional results
-                parameters = {
-                    "num_inference_steps": kwargs.get("steps", 50),  # Higher steps for better quality
-                    "guidance_scale": kwargs.get("guidance_scale", 9.0),  # Higher guidance for better prompt adherence
-                    "width": kwargs.get("width", 1024),
-                    "height": kwargs.get("height", 1024),
-                    "negative_prompt": negative_prompt,
-                    "scheduler": "DPMSolverMultistepScheduler",  # Better scheduler for quality
-                    "num_images_per_prompt": 1
-                }
-                
-                # Adjust parameters for specific models
-                if "FLUX.1-dev" in model:
-                    # FLUX.1-dev works best with specific parameters for accuracy
-                    parameters["num_inference_steps"] = min(kwargs.get("steps", 28), 28)  # FLUX works well with fewer steps
-                    parameters["guidance_scale"] = min(kwargs.get("guidance_scale", 3.5), 3.5)  # Lower guidance for FLUX
-                    # FLUX prefers specific dimensions
-                    if parameters["width"] == 1024 and parameters["height"] == 1024:
-                        parameters["width"] = 1024
-                        parameters["height"] = 1024  # FLUX works well with square images
-                elif "stable-diffusion-3.5-large" in model:
-                    # The 3.5-large model might have different parameter requirements
-                    # Try with fewer inference steps to avoid timeouts/errors
-                    parameters["num_inference_steps"] = min(kwargs.get("steps", 25), 25)  # Even fewer steps for better model
-                    # Some models work better with different dimensions
-                    if parameters["width"] == 1024 and parameters["height"] == 1024:
-                        parameters["width"] = 768
-                        parameters["height"] = 768
-                    # Add guidance scale adjustment for better model
-                    parameters["guidance_scale"] = min(kwargs.get("guidance_scale", 8.0), 8.0)  # Slightly higher guidance
-                
-                # Retry logic for the better model
-                max_retries = 5 if "stable-diffusion-3.5-large" in model else 1
-                for attempt in range(max_retries):
-                    if attempt > 0:
-                        logger.info(f"Retrying {model} (attempt {attempt + 1}/{max_retries})")
-                        # Slightly adjust parameters for retry
-                        parameters["seed"] = int(time.time() * 1000) % 1000000
-                
-                    payload = {
-                        "inputs": prompt,
-                        "parameters": parameters
-                    }
-                
+
+        if not self.hf_token:
+            logger.warning("HUGGING_FACE_API_TOKEN is missing")
+            return None
+
+        try:
+            provider = self.providers["huggingface"].get("provider", "auto")
+
+            client = InferenceClient(
+                provider=provider,
+                api_key=self.hf_token,
+            )
+
+            models = self.providers["huggingface"]["models"]
+
+            for model in models:
+                try:
                     logger.info(f"Trying Hugging Face model: {model}")
-                    logger.info(f"Parameters: {parameters}")
-                    response = requests.post(url, headers=headers, json=payload, timeout=180)  # Increased timeout for better model
-                    
-                    if response.status_code == 200:
-                        content_length = len(response.content)
-                        if content_length > 1000:  # Valid image size
-                            logger.info(f"✅ Success with Hugging Face model: {model}")
-                            return response.content
-                        else:
-                            logger.warning(f"Response too small from {model}: {content_length} bytes")
-                    elif response.status_code == 400:
-                        logger.warning(f"Bad request for {model}: {response.text[:500]}")
-                        # Log the full request for debugging
-                        logger.debug(f"Full request payload for {model}: {payload}")
-                        # Don't retry on bad requests as they're likely due to invalid parameters
-                        break
-                    elif response.status_code == 429:
-                        logger.warning(f"Rate limit hit for {model}")
-                        time.sleep(10)  # Wait longer for rate limits
-                    elif response.status_code == 503:
-                        logger.info(f"Model {model} is loading")
-                        time.sleep(15)  # Wait longer for model loading
-                    else:
-                        logger.warning(f"HF API error {response.status_code} for {model}: {response.text[:500]}")
-                        # For other errors, wait before retrying
-                        time.sleep(5)
-                    
-                    if attempt < max_retries - 1:
-                        time.sleep(5)  # Wait between retries
-                
-                # If we get here, this model failed, continue to next model
-                continue
-                
-            except Exception as e:
-                logger.error(f"Error with HF model {model}: {str(e)}")
-                continue
-        
-        return None
-    
+
+                    # Keep the user's requested content as the foundation.
+                    # The previous implementation's very large parameter
+                    # payload was tied to the old direct endpoint, so the
+                    # first version uses the provider-compatible API with
+                    # only a focused prompt.
+                    enhanced_prompt = (
+                        f"{prompt}. "
+                        "Professional interior design photography, "
+                        "photorealistic, realistic materials, "
+                        "accurate furniture proportions, "
+                        "natural lighting, detailed textures, "
+                        "high quality architectural visualization."
+                    )
+
+                    logger.info(
+                        f"Generating image with {model} "
+                        f"using provider={provider}"
+                    )
+
+                    image = client.text_to_image(
+                        prompt=enhanced_prompt,
+                        model=model,
+                    )
+
+                    if image is None:
+                        logger.warning(
+                            f"No image returned from {model}"
+                        )
+                        continue
+
+                    from io import BytesIO
+
+                    image_buffer = BytesIO()
+                    image.save(image_buffer, format="PNG")
+                    image_bytes = image_buffer.getvalue()
+
+                    if len(image_bytes) > 1000:
+                        logger.info(
+                            f"Successfully generated image with {model}"
+                        )
+                        logger.info(
+                            f"Generated image size: {len(image_bytes)} bytes"
+                        )
+                        return image_bytes
+
+                    logger.warning(
+                        f"Generated image from {model} "
+                        f"is unexpectedly small: {len(image_bytes)} bytes"
+                    )
+
+                except Exception as model_error:
+                    logger.warning(
+                        f"Hugging Face model {model} failed: "
+                        f"{str(model_error)[:500]}"
+                    )
+                    continue
+
+            logger.error("All Hugging Face image models failed")
+            return None
+
+        except Exception as e:
+            logger.error(
+                f"Hugging Face provider initialization failed: {str(e)}"
+            )
+            return None
+
     def _try_replicate(self, prompt: str, negative_prompt: str, **kwargs) -> Optional[bytes]:
         """
         Try Replicate API (if available)

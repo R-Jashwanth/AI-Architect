@@ -63,7 +63,7 @@ class HybridImageService:
         # PRIORITY 2: Direct scrapers (no API keys needed, may be blocked)
         self.providers.append(("pexels_direct", self.pexels_direct))
         self.providers.append(("pixabay_direct", self.pixabay_direct))
-        
+         
         # PRIORITY 3: Free APIs (may be rate limited)
         self.providers.append(("openverse", self.openverse))
         self.providers.append(("wikimedia", self.wikimedia))

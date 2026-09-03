@@ -93,7 +93,7 @@ class VisionService:
             
             # Call the Groq API with LLaMA 3.3 Vision
             response = self.client.chat.completions.create(
-                model="meta-llama/llama-4-scout-17b-16e-instruct",
+                model="openai/gpt-oss-120b",
                 messages=messages,
                 temperature=0.7,
                 max_completion_tokens=1024,

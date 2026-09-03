@@ -100,7 +100,7 @@ class AIDesignService:
             self.fallback_provider = None
 
         # Set model names
-        self.groq_model = "llama-3.3-70b-versatile"
+        self.groq_model = "openai/gpt-oss-120b"
         self.gemini_model = "gemini-1.5-pro"
 
         # Initialize ecommerce service

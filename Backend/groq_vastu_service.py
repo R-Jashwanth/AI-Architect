@@ -417,7 +417,7 @@ class GroqVastuService:
                     },
                     {"role": "user", "content": prompt},
                 ],
-                model="llama-3.1-8b-instant",
+                model="openai/gpt-oss-120b",
                 temperature=0.3,
                 max_tokens=2000,
             )
@@ -535,7 +535,7 @@ class GroqVastuService:
                     *conversation_history,
                     {"role": "user", "content": request.message},
                 ],
-                model="llama-3.1-8b-instant",
+                model="openai/gpt-oss-120b",
                 temperature=0.4,
                 max_tokens=1500,
             )

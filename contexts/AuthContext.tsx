@@ -1,105 +1,243 @@
+
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session, AuthError } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabaseClient';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  User,
+  Session,
+  AuthError,
+} from "@supabase/supabase-js";
+
+import { supabase } from "@/lib/supabaseClient";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, username: string) => Promise<{ error: AuthError | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+
+  signUp: (
+    email: string,
+    password: string,
+    username: string
+  ) => Promise<{ error: AuthError | null }>;
+
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<{ error: AuthError | null }>;
+
   signOut: () => Promise<{ error: AuthError | null }>;
-  resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
+
+  resetPassword: (
+    email: string
+  ) => Promise<{ error: AuthError | null }>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
+/**
+ * Create a profile for the authenticated user if it does not exist.
+ *
+ * IMPORTANT:
+ * This function is intentionally kept separate from the authentication
+ * loading state. A problem with the profiles table should never prevent
+ * the application from finishing authentication initialization.
+ */
 const createProfileIfNotExists = async (user: User) => {
-  if (!supabase) return;
+  if (!supabase) {
+    console.warn("Supabase is not configured.");
+    return;
+  }
 
   try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', user.id)
-      .single();
+    const profileData = {
+      id: user.id,
+      email: user.email ?? "",
+      username:
+        user.user_metadata?.username ||
+        user.email?.split("@")[0] ||
+        "",
+      avatar_url: null,
+    };
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 is not found
-      console.error('Error checking profile:', error);
-      return;
-    }
+    const { error } = await supabase
+      .from("profiles")
+      .upsert(profileData, {
+        onConflict: "id",
+      });
 
-    if (!data) {
-      // create profile
-      const profileData = {
-        id: user.id,
-        email: user.email,
-        username: user.user_metadata?.username || user.email?.split('@')[0] || '',
-        avatar_url: null
-      };
-      const { error: insertError } = await supabase
-        .from('profiles')
-        .insert([profileData] as any);
-      if (insertError) {
-        console.error('Error creating profile:', insertError);
-      }
+    if (error) {
+      console.error(
+        "Error creating/updating profile:",
+        error
+      );
     }
   } catch (error) {
-    console.error('Error in createProfileIfNotExists:', error);
+    console.error(
+      "Unexpected error in createProfileIfNotExists:",
+      error
+    );
   }
 };
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // If Supabase is not configured, set loading to false and return
+    /**
+     * If Supabase is not configured, don't leave the application
+     * stuck on the loading screen.
+     */
     if (!supabase) {
+      console.warn("Supabase is not configured.");
       setLoading(false);
       return;
     }
 
-    // Get initial session
+    let mounted = true;
+
+    /**
+     * Get the current authentication session.
+     */
     const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+
         if (error) {
-          console.error('Error getting session:', error);
-        } else {
+          console.error(
+            "Error getting initial session:",
+            error
+          );
+
+          if (mounted) {
+            setSession(null);
+            setUser(null);
+          }
+
+          return;
+        }
+
+        if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
         }
+
+        /**
+         * Create the user's profile in the background.
+         *
+         * IMPORTANT:
+         * We do NOT await this.
+         * Authentication loading should not depend on the
+         * profiles database request.
+         */
+        if (session?.user) {
+          void createProfileIfNotExists(session.user);
+        }
       } catch (error) {
-        console.error('Error in getInitialSession:', error);
+        console.error(
+          "Unexpected error getting initial session:",
+          error
+        );
+
+        if (mounted) {
+          setSession(null);
+          setUser(null);
+        }
       } finally {
-        setLoading(false);
+        /**
+         * This MUST always execute so pages such as
+         * /collaborate don't remain stuck on "Loading...".
+         */
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     getInitialSession();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+    /**
+     * Listen for authentication changes.
+     */
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!mounted) {
+          return;
+        }
+
+        /**
+         * Update authentication state immediately.
+         */
         setSession(session);
         setUser(session?.user ?? null);
-        if (session?.user) {
-          await createProfileIfNotExists(session.user);
-        }
+
+        /**
+         * IMPORTANT:
+         * Set loading to false BEFORE doing any profile work.
+         *
+         * This prevents a slow/hanging profiles query from keeping
+         * the entire application on the "Loading..." screen.
+         */
         setLoading(false);
+
+        /**
+         * Create/update profile in the background.
+         */
+        if (session?.user) {
+          void createProfileIfNotExists(session.user).catch(
+            (error) => {
+              console.error(
+                "Background profile creation failed:",
+                error
+              );
+            }
+          );
+        }
       }
     );
 
-    return () => subscription.unsubscribe();
+    /**
+     * Cleanup when AuthProvider unmounts.
+     */
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const signUp = async (email: string, password: string, username: string) => {
+  /**
+   * Sign up a new user.
+   */
+  const signUp = async (
+    email: string,
+    password: string,
+    username: string
+  ): Promise<{ error: AuthError | null }> => {
     if (!supabase) {
-      return { error: { message: 'Supabase is not configured' } as AuthError };
+      return {
+        error: {
+          message: "Supabase is not configured",
+        } as AuthError,
+      };
     }
 
     try {
@@ -111,58 +249,117 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             username,
           },
         },
-      })
-      return { error }
-    } catch (error) {
-      return { error: error as AuthError }
-    }
-  };
-
-  const signIn = async (email: string, password: string) => {
-    if (!supabase) {
-      return { error: { message: 'Supabase is not configured' } as AuthError };
-    }
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
       });
+
       return { error };
     } catch (error) {
-      return { error: error as AuthError };
+      console.error("Sign up error:", error);
+
+      return {
+        error: error as AuthError,
+      };
     }
   };
 
-  const signOut = async () => {
+  /**
+   * Sign in an existing user.
+   */
+  const signIn = async (
+    email: string,
+    password: string
+  ): Promise<{ error: AuthError | null }> => {
     if (!supabase) {
-      return { error: { message: 'Supabase is not configured' } as AuthError };
+      return {
+        error: {
+          message: "Supabase is not configured",
+        } as AuthError,
+      };
     }
 
     try {
-      const { error } = await supabase.auth.signOut();
+      const { error } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
       return { error };
     } catch (error) {
-      return { error: error as AuthError };
+      console.error("Sign in error:", error);
+
+      return {
+        error: error as AuthError,
+      };
     }
   };
 
-  const resetPassword = async (email: string) => {
+  /**
+   * Sign out the current user.
+   */
+  const signOut = async (): Promise<{
+    error: AuthError | null;
+  }> => {
     if (!supabase) {
-      return { error: { message: 'Supabase is not configured' } as AuthError };
+      return {
+        error: {
+          message: "Supabase is not configured",
+        } as AuthError,
+      };
     }
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      });
+      const { error } =
+        await supabase.auth.signOut();
+
       return { error };
     } catch (error) {
-      return { error: error as AuthError };
+      console.error("Sign out error:", error);
+
+      return {
+        error: error as AuthError,
+      };
     }
   };
 
-  const value = {
+  /**
+   * Send a password reset email.
+   */
+  const resetPassword = async (
+    email: string
+  ): Promise<{ error: AuthError | null }> => {
+    if (!supabase) {
+      return {
+        error: {
+          message: "Supabase is not configured",
+        } as AuthError,
+      };
+    }
+
+    try {
+      const redirectTo = `${window.location.origin}/auth/reset-password`;
+
+      const { error } =
+        await supabase.auth.resetPasswordForEmail(
+          email,
+          {
+            redirectTo,
+          }
+        );
+
+      return { error };
+    } catch (error) {
+      console.error(
+        "Password reset error:",
+        error
+      );
+
+      return {
+        error: error as AuthError,
+      };
+    }
+  };
+
+  const value: AuthContextType = {
     user,
     session,
     loading,
@@ -172,13 +369,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     resetPassword,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-export function useAuth() {
+/**
+ * Hook for accessing authentication state.
+ */
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error(
+      "useAuth must be used within an AuthProvider"
+    );
   }
+
   return context;
 }
+ 

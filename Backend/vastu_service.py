@@ -62,7 +62,7 @@ class RoomAnalysis(BaseModel):
 
 class VastuService:
     def __init__(self):
-        self.model_name = os.getenv('VASTU_GROQ_MODEL', 'llama-3.3-70b-versatile')
+        self.model_name = os.getenv('VASTU_GROQ_MODEL', 'openai/gpt-oss-120b')
         if not groq_client:
             raise ValueError("GROQ_API_KEY not configured for VastuService")
         self.vastu_rules = self._load_vastu_rules()
